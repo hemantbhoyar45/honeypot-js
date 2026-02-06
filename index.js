@@ -13,7 +13,7 @@ app.use(express.json());
 const CALLBACK_URL = "https://hackathon.guvi.in/api/updateHoneyPotFinalResult";
 const SECRET_API_KEY = "team_top_250_secret" ;
 
-const MIN_TURNS_BEFORE_FINAL = 14;
+const MIN_TURNS_BEFORE_FINAL = 8;
 const JSON_FILE = path.join(__dirname, "honeypot_output.json");
 
 const FINALIZED_SESSIONS = new Set();
