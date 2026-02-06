@@ -1,3 +1,5 @@
+// ...existing code...
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -7,31 +9,26 @@ const crypto = require('crypto');
 const app = express();
 app.use(express.json());
 
-// =========================================================
-// ENV + CONSTANTS
-// =========================================================
 const CALLBACK_URL = "https://hackathon.guvi.in/api/updateHoneyPotFinalResult";
-const SECRET_API_KEY = "team_top_250_secret" ;
+const SECRET_API_KEY = team_top_250_secret;
 
 const MIN_TURNS_BEFORE_FINAL = 6;
-const JSON_FILE = path.join(__dirname, "honeypot_output.json");
-
-const FINALIZED_SESSIONS = new Set();
+const JSON_FILE = "honeypot_output.json";
 
 // =========================================================
-// JSON LOGGER (FILE + CONSOLE)
+// JSON LOGGER (PRINT + FILE)
 // =========================================================
 function log_json(data) {
 	console.log(JSON.stringify(data, null, 2));
 	try {
 		if (!fs.existsSync(JSON_FILE)) {
-			fs.writeFileSync(JSON_FILE, JSON.stringify([]), 'utf-8');
+			fs.writeFileSync(JSON_FILE, JSON.stringify([]), { encoding: 'utf-8' });
 		}
-		const existing = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+		const existing = JSON.parse(fs.readFileSync(JSON_FILE, { encoding: 'utf-8' }));
 		existing.push(data);
-		fs.writeFileSync(JSON_FILE, JSON.stringify(existing, null, 2), 'utf-8');
+		fs.writeFileSync(JSON_FILE, JSON.stringify(existing, null, 2), { encoding: 'utf-8' });
 	} catch (e) {
-		console.error("JSON LOG ERROR:", e.toString());
+		console.log(JSON.stringify({ event: 'json_write_error', error: e.toString() }));
 	}
 }
 
@@ -40,14 +37,14 @@ function log_json(data) {
 // =========================================================
 function sanitize(text) {
 	if (!text) return "";
-	return text
-		.normalize("NFKD")
-		.replace(/[\x00-\x1F\x7F]/g, "")
-		.trim();
+	// Remove control characters and normalize
+	text = text.normalize("NFKD");
+	text = text.replace(/[\x00-\x1F\x7F]/g, "");
+	return text.trim();
 }
 
 // =========================================================
-// HONEYPOT AGENT DATA
+// AGENT MEMORY
 // =========================================================
 const ZOMBIE_INTROS = [
 	"Hello sir,", "Excuse me,", "One second please,", "Listen,", "I am confused,"
@@ -95,32 +92,43 @@ const ZOMBIE_CLOSERS = [
 // =========================================================
 function agent_reply(text) {
 	const t = text.toLowerCase();
-	let cat = "generic";
-
-	if (["bank", "account", "ifsc"].some(x => t.includes(x))) cat = "bank";
-	else if (["upi", "gpay", "paytm", "phonepe"].some(x => t.includes(x))) cat = "upi";
-	else if (["http", "link", "apk", "url"].some(x => t.includes(x))) cat = "link";
-	else if (["otp", "pin", "code"].some(x => t.includes(x))) cat = "otp";
-	else if (["block", "police", "suspend"].some(x => t.includes(x))) cat = "threat";
-
-	const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-
-	return sanitize(
-		`${pick(ZOMBIE_INTROS)} ${pick(ZOMBIE_REPLIES[cat])} ${pick(ZOMBIE_CLOSERS)}`
-	);
+	let cat;
+	if (["bank", "account", "ifsc"].some(x => t.includes(x))) {
+		cat = "bank";
+	} else if (["upi", "gpay", "paytm", "phonepe"].some(x => t.includes(x))) {
+		cat = "upi";
+	} else if (["http", "link", "apk", "url"].some(x => t.includes(x))) {
+		cat = "link";
+	} else if (["otp", "pin", "code"].some(x => t.includes(x))) {
+		cat = "otp";
+	} else if (["block", "police", "suspend"].some(x => t.includes(x))) {
+		cat = "threat";
+	} else {
+		cat = "generic";
+	}
+	function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+	return sanitize(`${pick(ZOMBIE_INTROS)} ${pick(ZOMBIE_REPLIES[cat])} ${pick(ZOMBIE_CLOSERS)}`);
 }
 
 // =========================================================
 // INTELLIGENCE EXTRACTION
 // =========================================================
 function extract_intelligence(messages) {
-	const blob = sanitize(messages.join(" "));
+	const blob = sanitize(messages.join(' '));
 	return {
+<<<<<<< HEAD
 		bankAccounts: [...new Set(blob.match(/\b\d{12}\b/g) || [])],
 		upiIds: [...new Set(blob.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || [])],
 		phishingLinks: [...new Set(blob.match(/https?:\/\/\S+|www\.\S+/g) || [])],
 		phoneNumbers: [...new Set(blob.match(/(?:\+91[\-\s]?)?[6-9]\d{9}/g) || [])],
 		suspiciousKeywords: [...new Set(blob.match(/\b(urgent|verify|blocked|suspend|kyc|police|otp)\b/gi) || [])]
+=======
+		bankAccounts: Array.from(new Set((blob.match(/\b\d{9,18}\b/g) || []))),
+		upiIds: Array.from(new Set((blob.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || []))),
+		phishingLinks: Array.from(new Set((blob.match(/https?:\/\/\S+|www\.\S+/g) || []))),
+		phoneNumbers: Array.from(new Set((blob.match(/(?:\+91[\-\s]?)?[6-9]\d{9}/g) || []))),
+		suspiciousKeywords: Array.from(new Set((blob.match(/\b(urgent|verify|blocked|suspend|kyc|police|otp)\b/gi) || [])))
+>>>>>>> parent of 6612521 (third)
 	};
 }
 
@@ -138,41 +146,29 @@ app.get('/', (req, res) => {
 });
 
 // =========================================================
-// HONEYPOT API
+// API ENDPOINT
 // =========================================================
-app.post('/honey-pote', (req, res) => {
+app.post('/honey-pote', async (req, res) => {
 	const payload = req.body;
-
 	const session_id = sanitize(payload.sessionId);
-	const incoming = sanitize(payload.message?.text || "");
-
-	const history = (payload.conversationHistory || [])
-		.map(m => sanitize(m.text));
+	const incoming = sanitize(payload.message.text);
+	const history = (payload.conversationHistory || []).map(m => sanitize(m.text));
 	history.push(incoming);
-
 	const intel = extract_intelligence(history);
-
 	const scam_detected = Boolean(
 		intel.upiIds.length ||
 		intel.phishingLinks.length ||
 		intel.phoneNumbers.length ||
 		intel.suspiciousKeywords.length
 	);
-
 	const reply = agent_reply(incoming);
-
 	log_json({
 		event: "incoming_message",
 		sessionId: session_id,
 		message: incoming,
 		turns: history.length
 	});
-
-	if (
-		scam_detected &&
-		history.length >= MIN_TURNS_BEFORE_FINAL &&
-		!FINALIZED_SESSIONS.has(session_id)
-	) {
+	if (scam_detected && history.length >= MIN_TURNS_BEFORE_FINAL) {
 		const final_payload = {
 			sessionId: session_id,
 			scamDetected: true,
@@ -180,16 +176,10 @@ app.post('/honey-pote', (req, res) => {
 			extractedIntelligence: intel,
 			agentNotes: "Scammer used urgency, OTP request and account blocking threats."
 		};
-
 		log_json({ event: "FINAL_RESULT", data: final_payload });
 		send_final_callback(final_payload);
-		FINALIZED_SESSIONS.add(session_id);
 	}
-
-	res.json({
-		status: "success",
-		reply
-	});
+	res.json({ status: "success", reply });
 });
 
 // =========================================================
@@ -203,14 +193,18 @@ function send_final_callback(payload) {
 		},
 		timeout: 5000
 	})
-	.then(() => log_json({ event: "final_callback_sent", sessionId: payload.sessionId }))
-	.catch(e => log_json({ event: "callback_error", error: e.toString() }));
+	.then(() => {
+		log_json({ event: "final_callback_sent", sessionId: payload.sessionId });
+	})
+	.catch(e => {
+		log_json({ event: "callback_error", error: e.toString() });
+	});
 }
 
 // =========================================================
-// SERVER START
+// LOCAL RUN
 // =========================================================
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-	console.log(`🔥 Agentic Scam Honeypot running on port ${PORT}`);
+	console.log(`Agentic Scam HoneyPot running on port ${PORT}`);
 });
