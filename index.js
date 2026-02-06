@@ -14,7 +14,11 @@ const CALLBACK_URL = "https://hackathon.guvi.in/api/updateHoneyPotFinalResult";
 const SECRET_API_KEY = "team_top_250_secret" ;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const MIN_TURNS_BEFORE_FINAL = 8;
+=======
+const MIN_TURNS_BEFORE_FINAL = 6;
+>>>>>>> parent of 02bb401 (Update index.js)
 =======
 const MIN_TURNS_BEFORE_FINAL = 6;
 >>>>>>> parent of 02bb401 (Update index.js)
@@ -59,6 +63,7 @@ const ZOMBIE_INTROS = [
 
 const ZOMBIE_REPLIES = {
 	bank: [
+<<<<<<< HEAD
 <<<<<<< HEAD
     "Why will my account be blocked?",
     "Which bank are you talking about?",
@@ -999,6 +1004,8 @@ const ZOMBIE_REPLIES = {
     "Good night."
   ]
 =======
+=======
+>>>>>>> parent of 02bb401 (Update index.js)
 		"Why will my account be blocked?",
 		"Which bank are you talking about?",
 		"I just received pension yesterday."
@@ -1028,6 +1035,9 @@ const ZOMBIE_REPLIES = {
 		"Please explain slowly.",
 		"I don't understand technology."
 	]
+<<<<<<< HEAD
+>>>>>>> parent of 02bb401 (Update index.js)
+=======
 >>>>>>> parent of 02bb401 (Update index.js)
 };
 
