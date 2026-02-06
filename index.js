@@ -359,7 +359,6 @@ const ZOMBIE_REPLIES = {
     "My phone is old.",
     "I can't hear you clearly.",
     "Is the line clear?",
-    "Please speak in Hindi.",
     "I don't know English well.",
     "Is my daughter's account safe?",
     "We have a joint account.",
@@ -735,7 +734,6 @@ const ZOMBIE_REPLIES = {
     "Yes, 123456.",
     "No? That was a guess.",
     "I am opening the message app.",
-    "It is in Hindi.",
     "Mujhe OTP mila hai.",
     "Number is 9988.",
     "Sir, did you send it?",
@@ -1028,7 +1026,6 @@ const ZOMBIE_REPLIES = {
     "I am an old man.",
     "I live in the village.",
     "English is weak.",
-    "Hindi please?",
     "My son is in America.",
     "I am alone here.",
     "You are like my son.",
@@ -1440,7 +1437,7 @@ function extract_intelligence(messages) {
 	const blob = sanitize(messages.join(" "));
 	return {
 		bankAccounts: [...new Set(blob.match(/\b\d{12}\b/g) || [])],
-		upiIds: [...new Set(blob.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || [])],
+		upiIds: [...new Set(blob.match(/[a- zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || [])],
 		phishingLinks: [...new Set(blob.match(/https?:\/\/\S+|www\.\S+/g) || [])],
 		phoneNumbers: [...new Set(blob.match(/(?:\+91[\-\s]?)?[6-9]\d{9}/g) || [])],
 		suspiciousKeywords: [...new Set(blob.match(/\b(urgent|verify|blocked|suspend|kyc|police|otp)\b/gi) || [])]
