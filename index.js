@@ -13,7 +13,7 @@ app.use(express.json());
 const CALLBACK_URL = "https://hackathon.guvi.in/api/updateHoneyPotFinalResult";
 const SECRET_API_KEY = "team_top_250_secret" ;
 
-const MIN_TURNS_BEFORE_FINAL = 12;
+const MIN_TURNS_BEFORE_FINAL = 22;
 const JSON_FILE = path.join(__dirname, "honeypot_output.json");
 
 const FINALIZED_SESSIONS = new Set();
@@ -1439,7 +1439,7 @@ function agent_reply(text) {
 function extract_intelligence(messages) {
 	const blob = sanitize(messages.join(" "));
 	return {
-		bankAccounts: [...new Set(blob.match(/\b\d{9,18}\b/g) || [])],
+		bankAccounts: [...new Set(blob.match(/\b\d{12}\b/g) || [])],
 		upiIds: [...new Set(blob.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || [])],
 		phishingLinks: [...new Set(blob.match(/https?:\/\/\S+|www\.\S+/g) || [])],
 		phoneNumbers: [...new Set(blob.match(/(?:\+91[\-\s]?)?[6-9]\d{9}/g) || [])],
