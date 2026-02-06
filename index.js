@@ -117,7 +117,7 @@ function extract_intelligence(messages) {
 	const blob = sanitize(messages.join(" "));
 	return {
 		bankAccounts: [...new Set(blob.match(/\b\d{12}\b/g) || [])],
-		upiIds: [...new Set(blob.match(/[a- zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || [])],
+		upiIds: [...new Set(blob.match(/[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/g) || [])],
 		phishingLinks: [...new Set(blob.match(/https?:\/\/\S+|www\.\S+/g) || [])],
 		phoneNumbers: [...new Set(blob.match(/(?:\+91[\-\s]?)?[6-9]\d{9}/g) || [])],
 		suspiciousKeywords: [...new Set(blob.match(/\b(urgent|verify|blocked|suspend|kyc|police|otp)\b/gi) || [])]
